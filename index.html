@@ -1,0 +1,543 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EARLY LEAVE SIGN-UP — TYS5</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #16213e, #0f3460); padding: 18px 25px; text-align: center; border-bottom: 3px solid #e94560; position: relative; }
+        .header h1 { font-size: 1.6rem; letter-spacing: 2px; text-transform: uppercase; }
+        .header p { color: #aaa; margin-top: 4px; font-size: 0.85rem; }
+        .live-dot { display: inline-block; width: 10px; height: 10px; background: #27ae60; border-radius: 50%; margin-right: 6px; animation: pulse 1.5s infinite; }
+        .live-dot.offline { background: #c0392b; animation: none; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(39,174,96,0.5); } 50% { box-shadow: 0 0 0 8px rgba(39,174,96,0); } }
+        .live-badge { display: inline-flex; align-items: center; background: rgba(39,174,96,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #27ae60; font-weight: 700; margin-left: 10px; }
+        .live-badge.offline { color: #c0392b; background: rgba(192,57,43,0.15); }
+        .mgr-tab { position: fixed; bottom: 12px; right: 12px; z-index: 200; background: rgba(15,52,96,0.7); color: #556; font-size: 0.7rem; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.08); transition: background 0.3s, color 0.3s; }
+        .mgr-tab:hover { background: rgba(233,69,96,0.3); color: #e94560; }
+        .mgr-tab.active { background: #e94560; color: #fff; }
+        .setup-banner { background: #f39c12; color: #111; padding: 12px 25px; text-align: center; font-size: 0.85rem; font-weight: 600; display: none; }
+        .plan-banner { background: #e67e22; color: #fff; padding: 12px 25px; text-align: center; font-size: 0.85rem; font-weight: 600; display: none; }
+        .roster-banner { background: #c0392b; color: #fff; padding: 12px 25px; text-align: center; font-size: 0.85rem; font-weight: 600; display: none; }
+        .container { max-width: 1100px; margin: 25px auto; padding: 0 20px 80px; }
+        .shift-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; padding: 10px 18px; background: #0f3460; border-radius: 8px; font-size: 0.85rem; color: #aaa; }
+        .shift-bar strong { color: #e94560; }
+        .card { background: #16213e; border-radius: 12px; padding: 22px 26px; margin-bottom: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card h2 { text-transform: uppercase; font-size: 1.1rem; margin: 0 0 16px; color: #e94560; letter-spacing: 1px; }
+        .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+        .form-group { flex: 1; min-width: 180px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.78rem; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 2px solid #0f3460; border-radius: 8px; background: #1a1a2e; color: #eee; font-size: 0.95rem; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #e94560; }
+        .form-group input::placeholder { color: #555; }
+        #badgeInput { font-size: 1.4rem !important; padding: 16px 18px !important; text-align: center; border-color: #ff9900 !important; letter-spacing: 2px; }
+        #badgeInput:focus { border-color: #e94560 !important; }
+        #badgeInput.resolved { border-color: #27ae60 !important; background: #1a2e1a !important; }
+        .scan-hint { text-align: center; color: #ff9900; font-size: 0.8rem; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .scan-hint.success { color: #27ae60; }
+        .scan-hint.error { color: #c0392b; }
+        .auto-filled-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 12px; padding: 12px 16px; background: #0f3460; border-radius: 8px; align-items: center; }
+        .auto-filled-row .af-item { flex: 1; min-width: 100px; }
+        .af-label { font-size: 0.72rem; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
+        .af-value { font-size: 1rem; font-weight: 700; color: #27ae60; }
+        .af-value.pending { color: #555; font-style: italic; font-weight: 400; }
+        .af-value.role { color: #ff9900; }
+        .btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-submit { background: #e94560; color: #fff; width: 100%; margin-top: 4px; font-size: 1.1rem; padding: 14px; }
+        .btn-clear { background: #c0392b; color: #fff; }
+        .btn-export { background: #0f3460; color: #fff; }
+        .btn-cancel { background: #0f3460; color: #fff; }
+        .success-msg { display: none; background: #27ae60; color: #fff; padding: 14px 18px; border-radius: 8px; text-align: center; margin-bottom: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 1.1rem; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        thead th { background: #0f3460; padding: 10px 12px; text-align: left; text-transform: uppercase; font-size: 0.73rem; letter-spacing: 1px; color: #ccc; border-bottom: 2px solid #e94560; }
+        tbody td { padding: 10px 12px; border-bottom: 1px solid #1a1a2e; font-size: 0.85rem; }
+        tbody tr { background: #16213e; }
+        tbody tr:nth-child(even) { background: #1b2a4a; }
+        tbody tr:hover { background: #233a5e; }
+        .no-data { text-align: center; padding: 25px; color: #555; font-style: italic; text-transform: uppercase; }
+        .fclm-tag { display: inline-block; background: #ff9900; color: #111; font-size: 0.65rem; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
+        .role-tag { display: inline-block; background: #8e44ad; color: #fff; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .manager-section { border: 2px dashed #e94560; padding: 18px 22px; display: none; }
+        .manager-section.visible { display: block; }
+        .manager-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .entry-count { background: #0f3460; padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .entry-count span { color: #e94560; font-size: 1.05rem; }
+        .roster-count { background: #1a2e1a; padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #27ae60; }
+        .plan-count { background: #2e1a2e; padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #ff9900; }
+        .remove-btn { background: none; border: none; color: #e94560; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
+        .remove-btn:hover { background: rgba(233,69,96,0.2); }
+        .upload-zone { border: 2px dashed #ff9900; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: background 0.2s; margin-top: 12px; }
+        .upload-zone:hover { background: rgba(255,153,0,0.05); }
+        .upload-zone p { color: #aaa; font-size: 0.85rem; margin: 0; }
+        .upload-zone strong { color: #ff9900; }
+        .upload-zone-plan { border-color: #8e44ad; }
+        .upload-zone-plan strong { color: #8e44ad; }
+        .upload-zone-plan:hover { background: rgba(142,68,173,0.05); }
+        .section-divider { border: none; border-top: 1px solid #0f3460; margin: 20px 0; }
+        .viewers { display: inline-flex; align-items: center; gap: 5px; background: rgba(15,52,96,0.6); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; color: #aaa; }
+        .pw-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 300; justify-content: center; align-items: center; }
+        .pw-overlay.active { display: flex; }
+        .pw-box { background: #16213e; padding: 30px; border-radius: 14px; text-align: center; max-width: 380px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 2px solid #e94560; }
+        .pw-box h3 { color: #e94560; margin: 0 0 6px; text-transform: uppercase; font-size: 1rem; letter-spacing: 1px; }
+        .pw-box p { color: #aaa; font-size: 0.8rem; margin: 0 0 16px; }
+        .pw-box input { width: 100%; padding: 12px 16px; border: 2px solid #0f3460; border-radius: 8px; background: #1a1a2e; color: #eee; font-size: 1.1rem; text-align: center; letter-spacing: 2px; margin-bottom: 12px; }
+        .pw-box input:focus { outline: none; border-color: #e94560; }
+        .pw-box .pw-error { color: #c0392b; font-size: 0.8rem; margin-bottom: 10px; min-height: 18px; font-weight: 600; }
+        .pw-actions { display: flex; gap: 10px; justify-content: center; }
+        .pw-actions button { flex: 1; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
+        .overlay.active { display: flex; }
+        .confirm-box { background: #16213e; padding: 28px; border-radius: 12px; text-align: center; max-width: 420px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+        .confirm-box h3 { color: #e94560; margin: 0 0 12px; text-transform: uppercase; }
+        .confirm-box p { color: #aaa; margin: 0 0 18px; font-size: 0.9rem; }
+        .confirm-actions { display: flex; gap: 12px; justify-content: center; }
+        .locked-msg { text-align: center; padding: 30px 20px; color: #555; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; }
+        .locked-msg .lock-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        @media (max-width: 600px) { .form-group { min-width: 100%; } .manager-actions { flex-direction: column; } .shift-bar { flex-direction: column; text-align: center; } #badgeInput { font-size: 1.1rem !important; } }
+    </style>
+</head>
+<body>
+
+<div class="setup-banner" id="setupBanner">⚠️ FIREBASE NOT CONFIGURED — DATA IS LOCAL ONLY.</div>
+<div class="roster-banner" id="rosterBanner">⚠️ NO ROSTER LOADED — BADGE SCANS WON'T AUTO-FILL NAMES.</div>
+<div class="plan-banner" id="planBanner">⚠️ NO SHIFT PLAN UPLOADED — ROLES WON'T APPEAR.</div>
+
+<div class="header">
+    <h1>📅 TYS5 — EARLY LEAVE SIGN-UP
+        <span class="live-badge" id="liveBadge"><span class="live-dot" id="liveDot"></span>LIVE</span>
+    </h1>
+    <p>SCAN YOUR BADGE → SELECT LEAVE TIME → SUBMIT</p>
+</div>
+
+<div class="mgr-tab" id="mgrTab">🔒 MANAGER</div>
+
+<div class="container">
+    <div class="shift-bar">
+        <div>TODAY: <strong id="currentDate"></strong></div>
+        <div>TIME: <strong id="currentTime"></strong></div>
+        <div class="viewers">👁 <span id="viewerCount">1</span> VIEWING</div>
+    </div>
+
+    <div class="success-msg" id="successMsg">✔ SUCCESSFULLY SIGNED UP FOR EARLY LEAVE! YOUR MANAGER HAS BEEN NOTIFIED.</div>
+
+    <!-- AA VIEW: SCAN & SUBMIT ONLY -->
+    <div class="card">
+        <h2>📟 STEP 1: SCAN YOUR BADGE</h2>
+        <div class="form-group" style="max-width: 500px; margin: 0 auto;">
+            <input type="text" id="badgeInput" placeholder="SCAN BADGE HERE..." autocomplete="off" autofocus>
+            <div class="scan-hint" id="scanHint">SCANNER READY — SCAN YOUR BADGE TO BEGIN</div>
+        </div>
+        <div class="auto-filled-row" id="autoFilledRow">
+            <div class="af-item"><div class="af-label">NAME</div><div class="af-value pending" id="afName">WAITING FOR SCAN...</div></div>
+            <div class="af-item"><div class="af-label">LOGIN</div><div class="af-value pending" id="afLogin">WAITING FOR SCAN...</div></div>
+            <div class="af-item"><div class="af-label">BADGE #</div><div class="af-value pending" id="afBadge">WAITING FOR SCAN...</div></div>
+            <div class="af-item" style="flex:2; min-width:200px;"><div class="af-label">ASSIGNED ROLE</div><div class="af-value pending" id="afRole">WAITING FOR SCAN...</div></div>
+        </div>
+        <h2>🕐 STEP 2: SELECT LEAVE TIME & SUBMIT</h2>
+        <div class="form-row">
+            <div class="form-group"><label>DESIRED LEAVE TIME</label><select id="leaveTime"></select></div>
+        </div>
+        <button class="btn btn-submit" id="submitBtn" disabled>📝 SUBMIT EARLY LEAVE REQUEST</button>
+    </div>
+
+    <!-- LOCKED MESSAGE FOR AAs -->
+    <div class="card">
+        <div class="locked-msg">
+            <div class="lock-icon">🔒</div>
+            <p>EARLY LEAVE SIGN-UPS ARE VISIBLE TO MANAGERS ONLY</p>
+            <p style="font-size:0.75rem; color:#444; margin-top:6px;">AFTER YOU SUBMIT, YOUR MANAGER WILL SEE YOUR REQUEST</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!--  MANAGER SECTION — PASSWORD PROTECTED  -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="card manager-section" id="managerSection">
+        <h2>🔒 MANAGER / SORT LEADER CONTROLS</h2>
+        <div class="manager-actions">
+            <div class="entry-count">SIGN-UPS: <span id="totalCount">0</span></div>
+            <div class="roster-count" id="rosterCountBadge">ROSTER: 0 AAs</div>
+            <div class="plan-count" id="planCountBadge">PLAN: 0 AAs</div>
+            <button class="btn btn-export" id="exportBtn">📄 EXPORT CSV</button>
+            <button class="btn btn-clear" id="clearBtn">🗑 CLEAR ALL (NEW SHIFT)</button>
+        </div>
+
+        <!-- SIGN-UP TABLE — MANAGERS ONLY -->
+        <hr class="section-divider">
+        <h2>📋 CURRENT EARLY LEAVE SIGN-UPS
+            <span class="live-badge" style="font-size:0.65rem;"><span class="live-dot" style="width:7px;height:7px;"></span>LIVE</span>
+        </h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>#</th><th>BADGE #</th><th>LOGIN</th><th>NAME</th><th>ASSIGNED ROLE</th><th>LEAVE TIME</th><th>SIGNED UP</th><th>REMOVE</th></tr></thead>
+                <tbody id="entriesTable"><tr><td colspan="8" class="no-data">NO SIGN-UPS YET</td></tr></tbody>
+            </table>
+        </div>
+
+        <!-- UPLOAD SHIFT PLAN -->
+        <hr class="section-divider">
+        <h2 style="color: #8e44ad;">📋 UPLOAD SHIFT PLAN (PLANGROUP CSV) — EACH SHIFT</h2>
+        <p style="color:#aaa; font-size:0.82rem; margin-bottom:8px;">DOWNLOAD THE PLANGROUP CSV FROM FCLM AT START OF SHIFT. MAPS AA LOGIN → ASSIGNED ROLE.</p>
+        <div class="upload-zone upload-zone-plan" id="planUploadZone">
+            <p>📁 <strong>CLICK HERE</strong> OR DRAG & DROP PLANGROUP CSV</p>
+            <p style="font-size:0.75rem; margin-top:4px;">FILE: PlanGroup.YYYYMMDD.TWI.TYS5.v1.csv</p>
+        </div>
+        <input type="file" id="planFileInput" accept=".csv" style="display:none;">
+        <div id="planUploadStatus" style="text-align:center; font-size:0.82rem; color:#aaa; margin-top:8px; min-height:18px;"></div>
+
+        <!-- UPLOAD ROSTER -->
+        <hr class="section-divider">
+        <h2>📂 UPLOAD ROSTER (TAMPERMONKEY EXPORT) — ONE TIME</h2>
+        <p style="color:#aaa; font-size:0.82rem; margin-bottom:8px;">MAPS BADGE # → NAME/LOGIN. ONLY NEEDED ONCE OR WHEN NEW HIRES START.</p>
+        <div class="upload-zone" id="uploadZone">
+            <p>📁 <strong>CLICK HERE</strong> OR DRAG & DROP ROSTER JSON</p>
+            <p style="font-size:0.75rem; margin-top:4px;">FILE: ROSTER_TYS5_YYYY-MM-DD.json</p>
+        </div>
+        <input type="file" id="rosterFileInput" accept=".json" style="display:none;">
+        <div id="rosterStatus" style="text-align:center; font-size:0.82rem; color:#aaa; margin-top:8px; min-height:18px;"></div>
+    </div>
+</div>
+
+<!-- PASSWORD OVERLAY -->
+<div class="pw-overlay" id="pwOverlay">
+    <div class="pw-box">
+        <h3>🔒 MANAGER ACCESS</h3>
+        <p>ENTER PASSWORD TO ACCESS MANAGER CONTROLS</p>
+        <input type="password" id="pwInput" placeholder="ENTER PASSWORD..." autocomplete="off">
+        <div class="pw-error" id="pwError"></div>
+        <div class="pw-actions">
+            <button class="btn btn-submit" style="font-size:0.9rem; padding:10px;" id="pwSubmit">UNLOCK</button>
+            <button class="btn btn-cancel" id="pwCancel">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM CLEAR OVERLAY -->
+<div class="overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <h3>⚠ CONFIRM CLEAR ALL DATA</h3>
+        <p>THIS WILL ERASE ALL SIGN-UP ENTRIES AND SHIFT PLAN. ROSTER WILL NOT BE AFFECTED.</p>
+        <div class="confirm-actions">
+            <button class="btn btn-clear" id="confirmYes">YES, CLEAR ALL</button>
+            <button class="btn btn-cancel" id="confirmNo">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+    var FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBhe2HRjiEb31euaGDCTP9zZR1EYPcDqVc",
+        authDomain: "tys5-early-leave.firebaseapp.com",
+        databaseURL: "https://tys5-early-leave-default-rtdb.firebaseio.com",
+        projectId: "tys5-early-leave",
+        storageBucket: "tys5-early-leave.firebasestorage.app",
+        messagingSenderId: "19693190615",
+        appId: "1:19693190615:web:a100bfe24bd6c6a07f1f92"
+    };
+
+    var SITE_ID = "TYS5";
+    var MANAGER_PASSWORD = "operations";
+
+    var db = null, entriesRef = null, rosterRef = null, planRef = null, presenceRef = null;
+    var useFirebase = false;
+    var rosterMap = {}, rosterCount = 0;
+    var planMap = {}, planCount = 0;
+    var resolvedData = { badge:'', login:'', name:'', role:'' };
+    var scanTimer = null;
+    var managerUnlocked = false;
+
+    // MANAGER LOCK/UNLOCK
+    document.getElementById('mgrTab').addEventListener('click', function() {
+        if (managerUnlocked) {
+            managerUnlocked = false;
+            document.getElementById('managerSection').classList.remove('visible');
+            document.getElementById('mgrTab').textContent = '🔒 MANAGER';
+            document.getElementById('mgrTab').classList.remove('active');
+        } else {
+            document.getElementById('pwOverlay').classList.add('active');
+            document.getElementById('pwInput').value = '';
+            document.getElementById('pwError').textContent = '';
+            setTimeout(function() { document.getElementById('pwInput').focus(); }, 100);
+        }
+    });
+
+    document.getElementById('pwSubmit').addEventListener('click', tryUnlock);
+    document.getElementById('pwInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') tryUnlock(); });
+    document.getElementById('pwCancel').addEventListener('click', function() { document.getElementById('pwOverlay').classList.remove('active'); });
+
+    function tryUnlock() {
+        var entered = document.getElementById('pwInput').value;
+        if (entered === MANAGER_PASSWORD) {
+            managerUnlocked = true;
+            document.getElementById('pwOverlay').classList.remove('active');
+            document.getElementById('managerSection').classList.add('visible');
+            document.getElementById('mgrTab').textContent = '🔓 HIDE MANAGER';
+            document.getElementById('mgrTab').classList.add('active');
+            document.getElementById('managerSection').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            document.getElementById('pwError').textContent = '❌ INCORRECT PASSWORD';
+            document.getElementById('pwInput').value = '';
+            document.getElementById('pwInput').focus();
+        }
+    }
+
+    // FIREBASE INIT
+    function initFirebase() {
+        if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY_HERE") {
+            document.getElementById('setupBanner').style.display = 'block';
+            document.getElementById('liveBadge').classList.add('offline');
+            document.getElementById('liveBadge').innerHTML = '<span class="live-dot offline"></span>LOCAL ONLY';
+            loadLocalEntries(); loadLocalRoster(); loadLocalPlan(); return;
+        }
+        try {
+            firebase.initializeApp(FIREBASE_CONFIG);
+            db = firebase.database();
+            entriesRef = db.ref('earlyLeave/' + SITE_ID + '/entries');
+            rosterRef = db.ref('earlyLeave/' + SITE_ID + '/roster');
+            planRef = db.ref('earlyLeave/' + SITE_ID + '/shiftPlan');
+            presenceRef = db.ref('earlyLeave/' + SITE_ID + '/presence');
+            useFirebase = true;
+            document.getElementById('setupBanner').style.display = 'none';
+            entriesRef.on('value', function(snap) {
+                var data = snap.val();
+                var entries = data ? Object.keys(data).map(function(k) { var e = data[k]; e._key = k; return e; }) : [];
+                entries.sort(function(a, b) { return (a.timestamp||0) - (b.timestamp||0); });
+                renderTable(entries);
+            });
+            rosterRef.on('value', function(snap) {
+                var data = snap.val();
+                if (data && data.roster) { buildRosterMap(data.roster); setSt('rosterStatus','✅ ROSTER: '+rosterCount+' AAs','#27ae60'); }
+                else { rosterMap={}; rosterCount=0; document.getElementById('rosterBanner').style.display='block'; }
+                updateCounts();
+            });
+            planRef.on('value', function(snap) {
+                var data = snap.val();
+                if (data && data.plan) {
+                    buildPlanMap(data.plan);
+                    setSt('planUploadStatus','✅ PLAN: '+planCount+' AAs — '+(data.uploadedAt||''),'#8e44ad');
+                } else { planMap={}; planCount=0; document.getElementById('planBanner').style.display='block'; }
+                updateCounts();
+            });
+            var myP = presenceRef.push(); myP.set(true); myP.onDisconnect().remove();
+            presenceRef.on('value', function(snap) { document.getElementById('viewerCount').textContent = snap.numChildren(); });
+            db.ref('.info/connected').on('value', function(snap) {
+                var b = document.getElementById('liveBadge');
+                if (snap.val()===true) { b.classList.remove('offline'); b.innerHTML='<span class="live-dot"></span>LIVE'; }
+                else { b.classList.add('offline'); b.innerHTML='<span class="live-dot offline"></span>OFFLINE'; }
+            });
+        } catch(e) {
+            document.getElementById('setupBanner').style.display='block';
+            loadLocalEntries(); loadLocalRoster(); loadLocalPlan();
+        }
+    }
+
+    // ROSTER + PLAN
+    function buildRosterMap(arr) {
+        rosterMap={}; for(var i=0;i<arr.length;i++){var r=arr[i]; if(r.badge) rosterMap[r.badge.trim()]={name:(r.name||'').trim(),login:(r.login||'').trim()}; }
+        rosterCount=Object.keys(rosterMap).length; document.getElementById('rosterBanner').style.display=rosterCount>0?'none':'block';
+    }
+    function lookupBadge(id) { return rosterMap[id.trim()]||rosterMap[id.trim().replace(/^0+/,'')]||null; }
+    function buildPlanMap(arr) {
+        planMap={}; var s={}; for(var i=0;i<arr.length;i++){var p=arr[i]; var a=(p.alias||'').trim().toLowerCase(); if(a&&!s[a]){planMap[a]=(p.role||'').trim(); s[a]=true;} }
+        planCount=Object.keys(planMap).length; document.getElementById('planBanner').style.display=planCount>0?'none':'block';
+    }
+    function lookupRole(login) { return login?planMap[login.trim().toLowerCase()]||'':''; }
+    function updateCounts() {
+        document.getElementById('rosterCountBadge').textContent='ROSTER: '+rosterCount+' AAs';
+        document.getElementById('planCountBadge').textContent='PLAN: '+planCount+' AAs';
+    }
+
+    // LOCAL FALLBACK
+    function getLocal() { try{return JSON.parse(localStorage.getItem('el5_e'))||[];}catch(e){return[];} }
+    function saveLocal(e) { localStorage.setItem('el5_e',JSON.stringify(e)); }
+    function loadLocalEntries() { renderTable(getLocal()); }
+    function loadLocalRoster() { try{var d=JSON.parse(localStorage.getItem('el5_r')); if(d&&d.roster){buildRosterMap(d.roster);setSt('rosterStatus','✅ ROSTER CACHE: '+rosterCount,'#27ae60');}}catch(e){} updateCounts(); }
+    function loadLocalPlan() { try{var d=JSON.parse(localStorage.getItem('el5_p')); if(d&&d.plan){buildPlanMap(d.plan);setSt('planUploadStatus','✅ PLAN CACHE: '+planCount,'#8e44ad');}}catch(e){} updateCounts(); }
+    function setSt(id,m,c) { var e=document.getElementById(id); e.textContent=m; e.style.color=c||'#aaa'; }
+
+    // PLAN CSV UPLOAD
+    document.getElementById('planUploadZone').addEventListener('click', function(){document.getElementById('planFileInput').click();});
+    document.getElementById('planUploadZone').addEventListener('dragover', function(e){e.preventDefault();this.style.background='rgba(142,68,173,0.1)';});
+    document.getElementById('planUploadZone').addEventListener('dragleave', function(){this.style.background='';});
+    document.getElementById('planUploadZone').addEventListener('drop', function(e){e.preventDefault();this.style.background='';if(e.dataTransfer.files.length)handlePlan(e.dataTransfer.files[0]);});
+    document.getElementById('planFileInput').addEventListener('change', function(){if(this.files.length)handlePlan(this.files[0]);});
+
+    function handlePlan(file) {
+        if(!file.name.endsWith('.csv')){setSt('planUploadStatus','❌ UPLOAD A .CSV FILE','#c0392b');return;}
+        var r=new FileReader();
+        r.onload=function(e){
+            try{
+                var lines=e.target.result.split('\n'), hdr=lines[0].split(',').map(function(h){return h.trim().replace(/"/g,'');}), ai=-1, ri=-1;
+                for(var i=0;i<hdr.length;i++){var h=hdr[i].toLowerCase(); if(h==='associate alias')ai=i; if(h==='assigned role')ri=i;}
+                if(ai===-1||ri===-1){setSt('planUploadStatus','❌ MISSING "Associate Alias" OR "Assigned Role" COLUMNS','#c0392b');return;}
+                var pa=[],seen={};
+                for(var j=1;j<lines.length;j++){if(!lines[j].trim())continue; var cols=parseCSV(lines[j]); var alias=(cols[ai]||'').trim(), role=(cols[ri]||'').trim();
+                    if(alias&&role&&!seen[alias.toLowerCase()]){pa.push({alias:alias,role:role});seen[alias.toLowerCase()]=true;}}
+                if(!pa.length){setSt('planUploadStatus','❌ NO DATA IN CSV','#c0392b');return;}
+                var now=new Date(), ts=now.toLocaleDateString()+' '+now.toLocaleTimeString();
+                var pd={plan:pa,uploadedAt:ts,fileName:file.name};
+                if(useFirebase){planRef.set(pd).then(function(){setSt('planUploadStatus','✅ UPLOADED '+pa.length+' AAs — ALL DEVICES SYNCED','#8e44ad');});}
+                else{localStorage.setItem('el5_p',JSON.stringify(pd));buildPlanMap(pa);updateCounts();setSt('planUploadStatus','✅ LOADED '+pa.length+' AAs (LOCAL)','#8e44ad');}
+            }catch(err){setSt('planUploadStatus','❌ ERROR: '+err.message,'#c0392b');}
+        }; r.readAsText(file);
+    }
+    function parseCSV(line){var r=[],c='',q=false;for(var i=0;i<line.length;i++){var ch=line[i];if(ch==='"')q=!q;else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}r.push(c.trim());return r;}
+
+    // ROSTER JSON UPLOAD
+    document.getElementById('uploadZone').addEventListener('click', function(){document.getElementById('rosterFileInput').click();});
+    document.getElementById('uploadZone').addEventListener('dragover', function(e){e.preventDefault();this.style.background='rgba(255,153,0,0.1)';});
+    document.getElementById('uploadZone').addEventListener('dragleave', function(){this.style.background='';});
+    document.getElementById('uploadZone').addEventListener('drop', function(e){e.preventDefault();this.style.background='';if(e.dataTransfer.files.length)handleRoster(e.dataTransfer.files[0]);});
+    document.getElementById('rosterFileInput').addEventListener('change', function(){if(this.files.length)handleRoster(this.files[0]);});
+
+    function handleRoster(file) {
+        if(!file.name.endsWith('.json')){setSt('rosterStatus','❌ UPLOAD A .JSON FILE','#c0392b');return;}
+        var r=new FileReader();
+        r.onload=function(e){
+            try{var d=JSON.parse(e.target.result);if(!d.roster||!d.roster.length){setSt('rosterStatus','❌ NO DATA','#c0392b');return;}
+                if(useFirebase){rosterRef.set(d).then(function(){setSt('rosterStatus','✅ UPLOADED '+d.roster.length+' AAs','#27ae60');});}
+                else{localStorage.setItem('el5_r',JSON.stringify(d));buildRosterMap(d.roster);updateCounts();setSt('rosterStatus','✅ LOADED '+d.roster.length+' AAs (LOCAL)','#27ae60');}
+            }catch(err){setSt('rosterStatus','❌ INVALID: '+err.message,'#c0392b');}
+        }; r.readAsText(file);
+    }
+
+    // BADGE SCAN
+    function setupScan() {
+        var f=document.getElementById('badgeInput');
+        f.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var v=f.value.trim();if(v.length>=4)doScan(v);}});
+        f.addEventListener('input',function(){clearTimeout(scanTimer);scanTimer=setTimeout(function(){var v=f.value.trim();if(/^\d{6,}$/.test(v))doScan(v);},300);});
+        f.addEventListener('paste',function(){setTimeout(function(){var v=f.value.trim();if(v.length>=4)doScan(v);},100);});
+    }
+
+    function doScan(badgeId) {
+        var hint=document.getElementById('scanHint'),afN=document.getElementById('afName'),afL=document.getElementById('afLogin'),afB=document.getElementById('afBadge'),afR=document.getElementById('afRole'),sb=document.getElementById('submitBtn');
+        resolvedData.badge=badgeId; afB.textContent=badgeId; afB.classList.remove('pending');
+        var m=lookupBadge(badgeId);
+        if(m){
+            resolvedData.name=m.name.toUpperCase(); resolvedData.login=m.login.toUpperCase();
+            afN.textContent=resolvedData.name; afN.classList.remove('pending');
+            afL.textContent=resolvedData.login||'—'; afL.classList.remove('pending');
+            var role=lookupRole(m.login); resolvedData.role=role;
+            if(role){afR.textContent=role;afR.className='af-value role';}else{afR.textContent='NO ROLE IN PLAN';afR.className='af-value pending';}
+            hint.textContent='✅ '+resolvedData.name+(role?' — '+role:'')+' — SELECT LEAVE TIME'; hint.className='scan-hint success';
+            document.getElementById('badgeInput').classList.add('resolved'); sb.disabled=false;
+            document.getElementById('leaveTime').focus();
+        } else {
+            resolvedData.name='';resolvedData.login='';resolvedData.role='';
+            afN.textContent='NOT FOUND';afN.className='af-value pending'; afL.textContent='—';afL.classList.remove('pending');
+            afR.textContent='—';afR.className='af-value pending';
+            hint.textContent='⚠️ BADGE NOT IN ROSTER — ENTER NAME';hint.className='scan-hint error';
+            showManual(); sb.disabled=false;
+        }
+    }
+
+    function showManual() {
+        if(document.getElementById('manualNameRow'))return;
+        var row=document.createElement('div');row.className='form-row';row.id='manualNameRow';
+        row.innerHTML='<div class="form-group"><label>YOUR NAME</label><input type="text" id="manualName" placeholder="ENTER YOUR NAME..."></div>';
+        document.getElementById('autoFilledRow').parentElement.insertBefore(row,document.getElementById('autoFilledRow').nextSibling);
+        document.getElementById('manualName').focus();
+        document.getElementById('manualName').addEventListener('input',function(){resolvedData.name=this.value.trim().toUpperCase();document.getElementById('afName').textContent=resolvedData.name||'TYPE NAME';});
+    }
+
+    // TIME OPTIONS
+    (function(){var s=document.getElementById('leaveTime');var o=document.createElement('option');o.value='';o.textContent='-- SELECT A TIME --';s.appendChild(o);
+        for(var h=0;h<24;h++){for(var m=0;m<60;m+=15){var h12=h%12||12,ap=h<12?'AM':'PM';var l=h12+':'+(m<10?'0':'')+m+' '+ap;var opt=document.createElement('option');opt.value=l;opt.textContent=l;s.appendChild(opt);}}})();
+
+    function updateClock(){var n=new Date();var d=['SUN','MON','TUE','WED','THU','FRI','SAT'];var mo=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        document.getElementById('currentDate').textContent=d[n.getDay()]+', '+mo[n.getMonth()]+' '+n.getDate()+', '+n.getFullYear();
+        var h=n.getHours(),m=n.getMinutes(),s=n.getSeconds(),ap=h>=12?'PM':'AM',h12=h%12||12;
+        document.getElementById('currentTime').textContent=h12+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s+' '+ap;}
+    setInterval(updateClock,1000);updateClock();
+    function nowStamp(){var n=new Date(),h=n.getHours(),m=n.getMinutes(),ap=h>=12?'PM':'AM',h12=h%12||12;return h12+':'+(m<10?'0':'')+m+' '+ap;}
+
+    // SUBMIT
+    document.getElementById('submitBtn').addEventListener('click', function(){
+        var b=resolvedData.badge,nm=resolvedData.name,lg=resolvedData.login,rl=resolvedData.role;
+        var lt=document.getElementById('leaveTime').value;
+        if(!b){alert('SCAN YOUR BADGE.');document.getElementById('badgeInput').focus();return;}
+        if(!nm){alert('NAME REQUIRED.');return;}
+        if(!lt){alert('SELECT A TIME.');document.getElementById('leaveTime').focus();return;}
+        var entry={badge:b,login:lg,name:nm,role:rl,leaveTime:lt,signedUpAt:nowStamp(),timestamp:Date.now()};
+        if(useFirebase){
+            entriesRef.orderByChild('badge').equalTo(b).once('value',function(snap){
+                if(snap.exists()){if(!confirm('BADGE #'+b+' ALREADY SIGNED UP. UPDATE?'))return;snap.forEach(function(c){c.ref.remove();});}
+                entriesRef.push(entry);resetForm();showSuccess();});
+        } else {
+            var ent=getLocal();var di=-1;for(var i=0;i<ent.length;i++){if(ent[i].badge===b){di=i;break;}}
+            if(di!==-1){if(!confirm('BADGE #'+b+' ALREADY SIGNED UP. UPDATE?'))return;ent.splice(di,1);}
+            ent.push(entry);saveLocal(ent);renderTable(ent);resetForm();showSuccess();
+        }
+    });
+
+    function resetForm(){
+        resolvedData={badge:'',login:'',name:'',role:''};
+        document.getElementById('badgeInput').value='';document.getElementById('badgeInput').classList.remove('resolved');
+        document.getElementById('leaveTime').selectedIndex=0;
+        ['afName','afLogin','afBadge','afRole'].forEach(function(id){var e=document.getElementById(id);e.textContent='WAITING FOR SCAN...';e.className='af-value pending';});
+        document.getElementById('scanHint').textContent='SCANNER READY — SCAN YOUR BADGE';document.getElementById('scanHint').className='scan-hint';
+        document.getElementById('submitBtn').disabled=true;
+        var mr=document.getElementById('manualNameRow');if(mr)mr.remove();
+        document.getElementById('badgeInput').focus();
+    }
+    function showSuccess(){var m=document.getElementById('successMsg');m.style.display='block';setTimeout(function(){m.style.display='none';},4000);}
+
+    // TABLE — ONLY VISIBLE INSIDE MANAGER SECTION
+    function renderTable(entries){
+        var tb=document.getElementById('entriesTable');
+        document.getElementById('totalCount').textContent=entries.length;
+        if(!entries.length){tb.innerHTML='<tr><td colspan="8" class="no-data">NO SIGN-UPS YET</td></tr>';return;}
+        var h='';
+        for(var i=0;i<entries.length;i++){
+            var e=entries[i],k=e._key||i;
+            var lc=e.login?e.login+'<span class="fclm-tag">FCLM</span>':'—';
+            var rh=e.role?'<span class="role-tag" title="'+e.role+'">'+e.role+'</span>':'—';
+            h+='<tr><td>'+(i+1)+'</td><td>'+e.badge+'</td><td>'+lc+'</td><td>'+e.name+'</td><td>'+rh+'</td><td><strong>'+e.leaveTime+'</strong></td><td>'+e.signedUpAt+'</td><td><button class="remove-btn" data-key="'+k+'" data-name="'+e.name+'">✖</button></td></tr>';
+        }
+        tb.innerHTML=h;
+        tb.querySelectorAll('.remove-btn').forEach(function(b){
+            b.addEventListener('click',function(){var key=this.getAttribute('data-key'),name=this.getAttribute('data-name');
+                if(!confirm('REMOVE '+name+'?'))return;
+                if(useFirebase){entriesRef.child(key).remove();}else{var e=getLocal();e.splice(parseInt(key),1);saveLocal(e);renderTable(e);}});
+        });
+    }
+
+    // EXPORT
+    document.getElementById('exportBtn').addEventListener('click',function(){
+        if(useFirebase){entriesRef.once('value',function(s){var d=s.val();doExport(d?Object.values(d):[]);});}else{doExport(getLocal());}
+    });
+    function doExport(entries){
+        if(!entries.length){alert('NO DATA.');return;}
+        var csv='BADGE,LOGIN,NAME,ASSIGNED ROLE,LEAVE TIME,SIGNED UP\n';
+        entries.forEach(function(e){csv+=e.badge+','+(e.login||'')+','+e.name+',"'+(e.role||'').replace(/,/g,';')+'",'+e.leaveTime+','+e.signedUpAt+'\n';});
+        var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+        a.download='EARLY_LEAVE_TYS5_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    }
+
+    // CLEAR
+    document.getElementById('clearBtn').addEventListener('click',function(){document.getElementById('confirmOverlay').classList.add('active');});
+    document.getElementById('confirmNo').addEventListener('click',function(){document.getElementById('confirmOverlay').classList.remove('active');});
+    document.getElementById('confirmYes').addEventListener('click',function(){
+        if(useFirebase){entriesRef.remove();planRef.remove();}
+        else{localStorage.removeItem('el5_e');localStorage.removeItem('el5_p');renderTable([]);planMap={};planCount=0;updateCounts();
+            setSt('planUploadStatus','','#aaa');}
+        document.getElementById('confirmOverlay').classList.remove('active');
+    });
+
+    // INIT
+    initFirebase();
+    setupScan();
+</script>
+</body>
+</html>
+
